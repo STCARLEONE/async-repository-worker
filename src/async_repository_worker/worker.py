@@ -3,10 +3,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING
 
 from .models import RepositoryJob
-from .queue import PriorityJobQueue
 
+if TYPE_CHECKING:
+    from .queue import PriorityJobQueue
 
 logger = logging.getLogger(__name__)
 

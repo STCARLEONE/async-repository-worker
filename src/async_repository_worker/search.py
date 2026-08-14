@@ -27,10 +27,10 @@ async def main():
     for repo in results:
         print(f"📦 {repo['full_name']}")
         print(f"   ⭐ Stars: {repo['stars']} | 🍴 Forks: {repo['forks']}")
-        if repo.get('language'):
+        if repo.get("language"):
             print(f"   📝 Language: {repo['language']}")
-        if repo.get('description'):
-            desc = repo['description'][:80]
+        if repo.get("description"):
+            desc = repo["description"][:80]
             print(f"   📄 {desc}...")
         print("-" * 60)
 

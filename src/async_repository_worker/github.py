@@ -5,7 +5,6 @@ import os
 import httpx
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
@@ -31,9 +30,7 @@ class GitHubClient:
         )
 
     async def get_repository(self, owner: str, repo: str) -> dict:
-        response = await self._client.get(
-            f"/repos/{owner}/{repo}"
-        )
+        response = await self._client.get(f"/repos/{owner}/{repo}")
 
         response.raise_for_status()
 
@@ -42,7 +39,7 @@ class GitHubClient:
     async def close(self) -> None:
         await self._client.aclose()
 
-    async def __aenter__(self) -> "GitHubClient":
+    async def __aenter__(self) -> GitHubClient:
         return self
 
     async def __aexit__(

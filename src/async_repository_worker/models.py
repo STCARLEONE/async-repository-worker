@@ -33,9 +33,7 @@ class RepositoryJob:
     attempt: int = 0
     error: str | None = None
 
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     started_at: datetime | None = None
     completed_at: datetime | None = None

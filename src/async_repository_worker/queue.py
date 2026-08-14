@@ -6,7 +6,6 @@ from itertools import count
 
 from .models import JobPriority, RepositoryJob
 
-
 _PRIORITY_WEIGHT = {
     JobPriority.CRITICAL: 0,
     JobPriority.HIGH: 1,
@@ -29,8 +28,8 @@ class PriorityJobQueue:
         if maxsize < 0:
             raise ValueError("maxsize cannot be negative")
 
-        self._queue: asyncio.PriorityQueue[_QueueItem] = (
-            asyncio.PriorityQueue(maxsize=maxsize)
+        self._queue: asyncio.PriorityQueue[_QueueItem] = asyncio.PriorityQueue(
+            maxsize=maxsize
         )
         self._sequence = count()
 

@@ -105,7 +105,8 @@ class Database:
         if isinstance(owner, dict):
             owner = owner.get("login", "")
 
-        cursor = await self._conn.execute("""
+        cursor = await self._conn.execute(
+            """
             INSERT INTO repositories (
                 owner, name, full_name, description, language,
                 stars, forks, open_issues, topics,
@@ -130,31 +131,34 @@ class Database:
                 archived = excluded.archived,
                 disabled = excluded.disabled,
                 last_fetched = excluded.last_fetched
-        """, {
-            "owner": owner,
-            "name": data["name"],
-            "full_name": data["full_name"],
-            "description": data.get("description"),
-            "language": data.get("language"),
-            "stars": data.get("stargazers_count", 0),
-            "forks": data.get("forks_count", 0),
-            "open_issues": data.get("open_issues_count", 0),
-            "topics": json.dumps(topics),
-            "created_at": data.get("created_at"),
-            "updated_at": data.get("updated_at"),
-            "pushed_at": data.get("pushed_at"),
-            "homepage": data.get("homepage"),
-            "license_name": license_name,
-            "archived": 1 if data.get("archived", False) else 0,
-            "disabled": 1 if data.get("disabled", False) else 0,
-            "last_fetched": now,
-        })
+        """,
+            {
+                "owner": owner,
+                "name": data["name"],
+                "full_name": data["full_name"],
+                "description": data.get("description"),
+                "language": data.get("language"),
+                "stars": data.get("stargazers_count", 0),
+                "forks": data.get("forks_count", 0),
+                "open_issues": data.get("open_issues_count", 0),
+                "topics": json.dumps(topics),
+                "created_at": data.get("created_at"),
+                "updated_at": data.get("updated_at"),
+                "pushed_at": data.get("pushed_at"),
+                "homepage": data.get("homepage"),
+                "license_name": license_name,
+                "archived": 1 if data.get("archived", False) else 0,
+                "disabled": 1 if data.get("disabled", False) else 0,
+                "last_fetched": now,
+            },
+        )
 
         await self._conn.commit()
         return cursor.lastrowid
 
     async def search(self, query: str, limit: int = 20) -> list[dict[str, Any]]:
-        cursor = await self._conn.execute("""
+        cursor = await self._conn.execute(
+            """
             SELECT
                 r.id, r.owner, r.name, r.full_name,
                 r.description, r.language, r.stars, r.forks,
@@ -164,15 +168,16 @@ class Database:
             WHERE repositories_fts MATCH ?
             ORDER BY r.stars DESC
             LIMIT ?
-        """, (query, limit))
+        """,
+            (query, limit),
+        )
 
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
     async def get_by_full_name(self, full_name: str) -> dict[str, Any] | None:
         cursor = await self._conn.execute(
-            "SELECT * FROM repositories WHERE full_name = ?",
-            (full_name,)
+            "SELECT * FROM repositories WHERE full_name = ?", (full_name,)
         )
         row = await cursor.fetchone()
         return dict(row) if row else None
