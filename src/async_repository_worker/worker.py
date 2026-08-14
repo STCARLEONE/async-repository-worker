@@ -49,7 +49,13 @@ class WorkerPool:
         if not self._tasks:
             return
 
-        await asyncio.gather(*self._tasks, return_exceptions=True)
+        await self._queue.join()
+
+        await asyncio.gather(
+            *self._tasks,
+            return_exceptions=True,
+        )
+
         self._tasks.clear()
 
     async def wait(self) -> None:
