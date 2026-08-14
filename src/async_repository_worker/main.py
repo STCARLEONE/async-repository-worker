@@ -4,12 +4,13 @@ import asyncio
 import logging
 
 from .config import Settings
+from .database import Database
+from .github import GitHubClient
 from .limiter import RateLimiter
 from .models import RepositoryJob
 from .queue import PriorityJobQueue
 from .retry import retry
 from .worker import WorkerPool
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +29,9 @@ async def run() -> None:
     )
 
     queue = PriorityJobQueue()
+    github = GitHubClient()
+    db = Database()
+    await db.connect()
 
     @retry(
         attempts=settings.retry_attempts,
@@ -36,11 +40,20 @@ async def run() -> None:
     )
     async def process_repository(job: RepositoryJob) -> None:
         async with limiter:
+            logger.info("Fetching repository: %s", job.repository)
+
+            owner, repo = job.repository.split("/", 1)
+            data = await github.get_repository(owner, repo)
+
+            repo_id = await db.insert_or_update(data)
+
             logger.info(
-                "Processing repository: %s",
-                job.repository,
+                "Repository: %s | Stars: %s | Forks: %s | ID: %s",
+                data["full_name"],
+                data["stargazers_count"],
+                data["forks_count"],
+                repo_id,
             )
-            await asyncio.sleep(0.1)
 
     pool = WorkerPool(
         queue=queue,
@@ -51,9 +64,9 @@ async def run() -> None:
     await pool.start()
 
     jobs = [
-        RepositoryJob(repository="STCARLEONE/repository-1"),
-        RepositoryJob(repository="STCARLEONE/repository-2"),
-        RepositoryJob(repository="STCARLEONE/repository-3"),
+        RepositoryJob(repository="STCARLEONE/async-repository-worker"),
+        RepositoryJob(repository="python/cpython"),
+        RepositoryJob(repository="psf/requests"),
     ]
 
     for job in jobs:
@@ -63,6 +76,8 @@ async def run() -> None:
     await pool.wait()
     await pool.stop()
 
+    await github.close()
+    await db.close()
     logger.info("All jobs completed")
 
 
