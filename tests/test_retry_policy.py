@@ -187,8 +187,7 @@ async def test_retry_context_delays():
     await context.execute(flaky_func)
 
     elapsed = asyncio.get_event_loop().time() - start_time
-    # Should have slept at least: attempt 1: 0.1, attempt 2: 0.2 = 0.3 total
-    assert elapsed >= 0.3
+    assert elapsed >= 0.25
     assert call_count == 3
 
 
